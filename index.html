@@ -4,9 +4,7 @@
   <title>Mini Browser with Back/Forward</title>
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#f4f4f4;}
-    header {
-      background:#2196f3; color:white; padding:10px; display:flex; gap:10px; align-items:center;
-    }
+    header { background:#2196f3; color:white; padding:10px; display:flex; gap:10px; align-items:center;}
     #searchInput { flex:1; padding:10px; font-size:16px; border:none; outline:none;}
     #searchBtn, #homeBtn, #backBtn, #fwdBtn {
       padding:10px 15px; border:none; background:#0d8ae0; color:white; cursor:pointer; font-size:16px;
@@ -19,10 +17,8 @@
     .result:hover { background:#f0f0f0;}
     iframe { width:100%; height:calc(100vh - 50px); border:none;}
     #home { padding:20px;}
-    .bookmark {
-      background:white; padding:10px; margin:5px 0; border:1px solid #ccc; display:flex;
-      justify-content:space-between; align-items:center;
-    }
+    .bookmark { background:white; padding:10px; margin:5px 0; border:1px solid #ccc; display:flex;
+      justify-content:space-between; align-items:center;}
     .bm-actions button { margin-left:5px;}
     #addBookmark { margin-top:20px; display:flex; gap:5px; flex-wrap:wrap;}
     #addBookmark input { padding:5px; flex:1;}
@@ -103,6 +99,7 @@
     }
 
     function loadSite(url) {
+      searchInput.value = url; // <-- NEW: update search bar with the actual link
       viewer.src = url;
       viewer.style.display = 'block';
       homePage.style.display = 'none';
@@ -206,6 +203,7 @@
     backBtn.onclick = () => {
       if (historyIndex > 0) {
         historyIndex--;
+        searchInput.value = historyStack[historyIndex]; // keep in sync
         viewer.src = historyStack[historyIndex];
       }
     };
@@ -213,10 +211,10 @@
     fwdBtn.onclick = () => {
       if (historyIndex < historyStack.length - 1) {
         historyIndex++;
+        searchInput.value = historyStack[historyIndex]; // keep in sync
         viewer.src = historyStack[historyIndex];
       }
     };
   </script>
 </body>
 </html>
-
