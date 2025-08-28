@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Browser with Hideable Search</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+    }
+    header {
+      background: #2196f3;
+      color: white;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+    }
+    #searchInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      outline: none;
+    }
+    #searchBtn, #toggleBtn {
+      padding: 10px 15px;
+      border: none;
+      background: #0d8ae0;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #results {
+      background: white;
+      max-height: 200px;
+      overflow-y: auto;
+      border-bottom: 1px solid #ccc;
+      display: none;
+    }
+    .result {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    .result:hover {
+      background: #f0f0f0;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 50px);
+      border: none;
+    }
+    .hidden {
+      max-height: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <header id="searchBarContainer">
+    <input id="searchInput" type="text" placeholder="Type a site name..." />
+    <button id="searchBtn">🔍</button>
+    <button id="toggleBtn" title="Hide Search Bar">⬆</button>
+  </header>
+  <div id="results"></div>
+  <iframe id="viewer"></iframe>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsDiv = document.getElementById('results');
+    const viewer = document.getElementById('viewer');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const searchBarContainer = document.getElementById('searchBarContainer');
+
+    async function searchSites(query) {
+      resultsDiv.innerHTML = '';
+      resultsDiv.style.display = 'block';
+
+      // Direct guess at the top
+      const guess = document.createElement('div');
+      guess.className = 'result';
+      guess.textContent = `${query}.com`;
+      guess.onclick = () => loadSite(`https://${query}.com`);
+      resultsDiv.appendChild(guess);
+
+      // Suggestions from DuckDuckGo
+      try {
+        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1`);
+        const data = await res.json();
+        if (data.RelatedTopics) {
+          data.RelatedTopics.forEach(item => {
+            if (item.FirstURL) {
+              const div = document.createElement('div');
+              div.className = 'result';
+              div.textContent = item.Text;
+              div.onclick = () => loadSite(item.FirstURL);
+              resultsDiv.appendChild(div);
+            }
+          });
+        }
+      } catch {
+        const e = document.createElement('div');
+        e.className = 'result';
+        e.textContent = 'Error loading suggestions.';
+        resultsDiv.appendChild(e);
+      }
+    }
+
+    function loadSite(url) {
+      viewer.src = url;
+      resultsDiv.style.display = 'none'; // hide list after choosing
+    }
+
+    searchBtn.onclick = () => {
+      const query = searchInput.value.trim();
+      if (query) searchSites(query);
+    };
+
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') searchBtn.click();
+    });
+
+    toggleBtn.onclick = () => {
+      searchBarContainer.classList.toggle('hidden');
+      toggleBtn.textContent = searchBarContainer.classList.contains('hidden') ? '⬇' : '⬆';
+    };
+  </script>
+</body>
+</html>
